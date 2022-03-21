@@ -544,11 +544,17 @@ public class DicomInputStream extends FilterInputStream
 
     public boolean readItemHeader() throws IOException {
         String methodName = "readItemHeader()";
-        for(;;) {
+        while(true) {
             readHeader();
-            if (tag == Tag.Item)
+            if (tag == Tag.Item) {
                 return true;
+            }
             if (tag == Tag.SequenceDelimitationItem) {
+                if (length != 0)
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH, methodName);
+                return false;
+            }
+            if (tag == Tag.ItemDelimitationItem) {
                 if (length != 0)
                     skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH, methodName);
                 return false;
@@ -675,6 +681,7 @@ public class DicomInputStream extends FilterInputStream
 
     public void readAttributes(Attributes attrs, int len, Predicate<DicomInputStream> stopPredicate)
             throws IOException {
+        String methodName = "readAttributes()";
         boolean undeflen = len == UNDEFINED_LENGTH;
         long endPos =  pos + (len & 0xffffffffL);
         while (undeflen || this.pos < endPos) {
@@ -708,8 +715,13 @@ public class DicomInputStream extends FilterInputStream
                     bigEndian = prevBigEndian;
                     explicitVR = prevExplicitVR;
                 }
-            } else
-                skipAttribute(UNEXPECTED_ATTRIBUTE, "readAttributes()");
+            } else if (tag == Tag.SequenceDelimitationItem) {
+                if (length != 0) {
+                    skipAttribute(UNEXPECTED_NON_ZERO_ITEM_LENGTH, methodName);
+                }
+            } else {
+                skipAttribute(UNEXPECTED_ATTRIBUTE, methodName);
+            }
         }
     }
 
