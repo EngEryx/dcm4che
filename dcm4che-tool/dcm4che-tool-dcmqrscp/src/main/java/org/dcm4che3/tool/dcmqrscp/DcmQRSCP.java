@@ -465,6 +465,10 @@ public class DcmQRSCP {
         return device;
     }
 
+    public final Connection getConnection() {return conn;}
+
+    public final ApplicationEntity getApplicationEntity() {return ae;}
+
     public final void setDicomDirectory(File dicomDir) {
         File storageDir = dicomDir.getParentFile();
         if (storageDir.mkdirs())
@@ -925,15 +929,25 @@ public class DcmQRSCP {
         }
     }
 
-    final DicomDirReader getDicomDirReader() {
+    public final FilesetInfo getFileSetInfo() {return fsInfo;}
+
+    public final DicomDirReader getDicomDirReader() {
          return ddReader;
     }
 
-    final DicomDirWriter getDicomDirWriter() {
+    public final void setDdReader(DicomDirReader ddReader) {
+        this.ddReader = ddReader;
+    }
+
+    public final DicomDirWriter getDicomDirWriter() {
          return ddWriter;
     }
 
-    private void openDicomDir() throws IOException {
+    public final void setDdWriter(DicomDirWriter ddWriter) {
+        this.ddWriter = ddWriter;
+    }
+
+    public void openDicomDir() throws IOException {
         if (!dicomDir.exists())
             DicomDirWriter.createEmptyDirectory(dicomDir,
                     UIDUtils.createUIDIfNull(fsInfo.getFilesetUID()),
@@ -943,7 +957,7 @@ public class DcmQRSCP {
         ddReader = ddWriter = DicomDirWriter.open(dicomDir);
     }
 
-    private void openDicomDirForReadOnly() throws IOException {
+    public void openDicomDirForReadOnly() throws IOException {
         ddReader = new DicomDirReader(dicomDir);
     }
 
@@ -951,7 +965,7 @@ public class DcmQRSCP {
         remoteConnections.put(aet, remote);
     }
 
-    Connection getRemoteConnection(String dest) {
+    public Connection getRemoteConnection(String dest) {
         return remoteConnections.get(dest);
     }
 
